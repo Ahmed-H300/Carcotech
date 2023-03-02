@@ -47,9 +47,6 @@ void sendData(void* pvParameters)
     /*get what's in the queue*/
     if(xQueue_bluetoothSendData != NULL && xQueueReceive(xQueue_bluetoothSendData, &sendMessage, (TickType_t) 1000) == pdPASS)
     {
-      Serial.print("sendData:");
-      Serial.println(sendMessage->data);  
-      vTaskDelay(pdMS_TO_TICKS(80));
       bluetooth.sendData(sendMessage->data);      /*sending the message received back to receiver*/ 
     }
   }
@@ -77,10 +74,7 @@ void receiveData(void* pvParameters)
     {
 
       messageTobeSend = (bluetoothSendMsg_t*) pvPortMalloc(sizeof(bluetoothSendMsg_t)); /*make a place in the heap for this new message*/
-      strcpy(messageTobeSend->data, receivedMsg.data);  /*copying received message to another struct that will be send back*/
-      Serial.print("receiveData inside if:");
-      Serial.println(messageTobeSend->data);  
-      vTaskDelay(pdMS_TO_TICKS(80));
+      strcpy(messageTobeSend->data, receivedMsg.data);  /*copying received message to another struct that will be send back*/ 
       xQueueSend(xQueue_bluetoothSendData, (void*) &messageTobeSend, (TickType_t) 1000); // send back to the queue
       receivedMsg.data[0] = '\0'; // for safety
     }
