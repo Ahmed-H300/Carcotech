@@ -33,6 +33,7 @@ typedef struct
 
 /**
  * @brief this is the task used for sending data from esp32
+ * TODO: make the function use notifications instead of just waiting on queues
 */
 void sendData(void* pvParameters)
 {
@@ -54,6 +55,7 @@ void sendData(void* pvParameters)
 
 /**
  * @brief this is the task used for reveiving data by esp32
+ * TODO: make the function use notifications instead of just waiting on queues
 */
 void receiveData(void* pvParameters)
 {
