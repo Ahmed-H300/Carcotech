@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "constants.h"
-
+#include "sensor.h"
 #include "bluetooth.h"
 
 // utility objects
