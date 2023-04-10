@@ -11,5 +11,8 @@
 #define BLUETOOTH_MSG_RCV_LEN          5       // used by queues for sending data to the task
 #define BLUETOOTH_RCV_DATA_QUEUE_LEN   10      // used by queues to create the length of the queue
 
+// related to the sensor
+# define BLACK  0
+# define WHITE  1
 
 #endif

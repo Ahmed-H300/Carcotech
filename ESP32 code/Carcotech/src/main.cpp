@@ -1,12 +1,12 @@
 #include <Arduino.h>
 
 #include "constants.h"
-
+#include "sensor.h"
 #include "bluetooth.h"
 
 // utility objects
 Bluetooth bluetooth;  /*this is the object throught which we can control the bluetooth*/
-
+Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/    
 
 // task handlers
 TaskHandle_t xHandle_bluetoothSendData = NULL;    /*this is the task handler for the bleutooth send data task*/
@@ -85,26 +85,42 @@ void receiveData(void* pvParameters)
 }
 
 void setup() {
+  
   // put your setup code here, to run once:
-  bluetooth.init(); /*initialization for the code*/
+  //bluetooth.init(); /*initialization for the code*/
+  sensor.init();      // initialization for the bluetooth
 
   /*for debugging purposes*/
   Serial.begin(115200); 
   while(!Serial);
 
+  
+
   /*create needed queues for inter-task communication*/
   /*docs: https://www.freertos.org/a00116.html*/
-  xQueue_bluetoothSendData = xQueueCreate(BLUETOOTH_SEND_DATA_QUEUE_LEN, sizeof(bluetoothSendMsg_t*));
-  xQueue_bluetoothRcvData = xQueueCreate(BLUETOOTH_RCV_DATA_QUEUE_LEN, sizeof(bluetoothRcvMsg_t*));
+  //xQueue_bluetoothSendData = xQueueCreate(BLUETOOTH_SEND_DATA_QUEUE_LEN, sizeof(bluetoothSendMsg_t*));
+  //xQueue_bluetoothRcvData = xQueueCreate(BLUETOOTH_RCV_DATA_QUEUE_LEN, sizeof(bluetoothRcvMsg_t*));
   
 
   /*create needed tasks*/
   /*docs: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/freertos_idf.html#_CPPv423xTaskCreatePinnedToCore14TaskFunction_tPCKcK22configSTACK_DEPTH_TYPEPCv11UBaseType_tPC12TaskHandle_tK10BaseType_t*/
-  xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
-  xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
+  //xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
+  //xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
 
 
 } 
 
 void loop() {
+  
+  for(int i = 0; i < 3; i++)
+  {uint8_t *sensorVals = sensor.readSensor(i);
+    Serial.print(sensorVals[0]);
+    Serial.print(sensorVals[1]);
+    Serial.print(sensorVals[2]);
+    Serial.print(sensorVals[3]);
+    Serial.print(sensorVals[4]);
+    Serial.println();
+  }
+  Serial.println("-----------------------------------------");
+  delay(500);
 }

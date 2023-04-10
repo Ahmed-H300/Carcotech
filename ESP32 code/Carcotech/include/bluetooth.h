@@ -24,7 +24,7 @@ public:
   
     /*destructor*/
     ~Bluetooth();
-
+    
     /**
      * @brief used to receive a string from the bluetooth
      * @param dataLen: is the length of the expected data to receive from the bluetooth module
