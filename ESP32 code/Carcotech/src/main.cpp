@@ -3,10 +3,12 @@
 #include "constants.h"
 #include "sensor.h"
 #include "bluetooth.h"
+#include "mp3.h"
 
 // utility objects
 Bluetooth bluetooth;  /*this is the object throught which we can control the bluetooth*/
-Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/    
+Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/  
+MP3 mp3;              /*this is the player through which we can play songs*/  
 
 // task handlers
 TaskHandle_t xHandle_bluetoothSendData = NULL;    /*this is the task handler for the bleutooth send data task*/
@@ -87,12 +89,13 @@ void receiveData(void* pvParameters)
 void setup() {
   
   // put your setup code here, to run once:
+  // initialization for the bluetooth
   //bluetooth.init(); /*initialization for the code*/
-  sensor.init();      // initialization for the bluetooth
+  //sensor.init();      /*intialization for the sensors*/
 
   /*for debugging purposes*/
-  Serial.begin(115200); 
-  while(!Serial);
+  //Serial.begin(115200); 
+  //while(!Serial);
 
   
 
@@ -107,20 +110,11 @@ void setup() {
   //xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
   //xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
 
-
+  mp3.init(1, true);
+  delay(5000);
+  mp3.playIntermediateSound(1);
 } 
 
 void loop() {
   
-  for(int i = 0; i < 3; i++)
-  {uint8_t *sensorVals = sensor.readSensor(i);
-    Serial.print(sensorVals[0]);
-    Serial.print(sensorVals[1]);
-    Serial.print(sensorVals[2]);
-    Serial.print(sensorVals[3]);
-    Serial.print(sensorVals[4]);
-    Serial.println();
-  }
-  Serial.println("-----------------------------------------");
-  delay(500);
 }
