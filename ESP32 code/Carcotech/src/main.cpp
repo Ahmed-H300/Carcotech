@@ -3,10 +3,13 @@
 #include "constants.h"
 #include "sensor.h"
 #include "bluetooth.h"
+#include "button.h"
 
 // utility objects
 Bluetooth bluetooth;  /*this is the object throught which we can control the bluetooth*/
 Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/    
+Button buttons;       /*this is the object that will represent our interface buttons*/
+
 
 // task handlers
 TaskHandle_t xHandle_bluetoothSendData = NULL;    /*this is the task handler for the bleutooth send data task*/
@@ -107,20 +110,17 @@ void setup() {
   //xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
   //xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
 
+  buttons.init();
 
 } 
 
 void loop() {
-  
-  for(int i = 0; i < 3; i++)
-  {uint8_t *sensorVals = sensor.readSensor(i);
-    Serial.print(sensorVals[0]);
-    Serial.print(sensorVals[1]);
-    Serial.print(sensorVals[2]);
-    Serial.print(sensorVals[3]);
-    Serial.print(sensorVals[4]);
-    Serial.println();
-  }
-  Serial.println("-----------------------------------------");
+  Serial.print("the value for line tracking button = ");
+  Serial.println(buttons.isBeginLineTrackingPressed());
+  Serial.print("the value for maze solving button = ");
+  Serial.println(buttons.isBeginMazeSolvingPressed());
+  Serial.print("the value for Maze training button = ");
+  Serial.println(buttons.isBeginMazeTrainingPressed());
+  Serial.println("------------------------------------");
   delay(500);
 }
