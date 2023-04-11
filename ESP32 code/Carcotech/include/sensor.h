@@ -5,7 +5,6 @@
 
 /*library link: https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library*/
 #include "SparkFunSX1509.h"
-//include "SparkFunSX1509.h"
 
 
 class Sensor
