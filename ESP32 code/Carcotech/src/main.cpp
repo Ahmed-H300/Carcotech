@@ -3,12 +3,15 @@
 #include "constants.h"
 #include "sensor.h"
 #include "bluetooth.h"
+#include "button.h"
 #include "mp3.h"
 
 // utility objects
 Bluetooth bluetooth;  /*this is the object throught which we can control the bluetooth*/
-Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/  
-MP3 mp3;              /*this is the player through which we can play songs*/  
+Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/    
+Button buttons;       /*this is the object that will represent our interface buttons*/
+MP3 mp3              ;/*this is the player through which we can play songs*/  
+
 
 // task handlers
 TaskHandle_t xHandle_bluetoothSendData = NULL;    /*this is the task handler for the bleutooth send data task*/
@@ -110,11 +113,11 @@ void setup() {
   //xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
   //xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
 
+} 
+
+void loop() {
+
   mp3.init(1, true);
   delay(5000);
   mp3.playIntermediateSound(1);
 } 
-
-void loop() {
-  
-}
