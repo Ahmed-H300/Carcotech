@@ -5,13 +5,14 @@
 #include "bluetooth.h"
 #include "button.h"
 #include "mp3.h"
+#include "motor.h"
 
 // utility objects
 Bluetooth bluetooth;  /*this is the object throught which we can control the bluetooth*/
 Sensor sensor;        /*this is the sensor object which is used to read the sensors values*/    
 Button buttons;       /*this is the object that will represent our interface buttons*/
-MP3 mp3              ;/*this is the player through which we can play songs*/  
-
+MP3 mp3;              /*this is the player through which we can play songs*/  
+Motor motor;          /*this is the motor driver through which we can control the motor*/
 
 // task handlers
 TaskHandle_t xHandle_bluetoothSendData = NULL;    /*this is the task handler for the bleutooth send data task*/
@@ -112,12 +113,21 @@ void setup() {
   /*docs: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/freertos_idf.html#_CPPv423xTaskCreatePinnedToCore14TaskFunction_tPCKcK22configSTACK_DEPTH_TYPEPCv11UBaseType_tPC12TaskHandle_tK10BaseType_t*/
   //xTaskCreatePinnedToCore(sendData, "Send data to bluetooth", BLUETOOTH_STACK_SEND_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothSendData, tskNO_AFFINITY);
   //xTaskCreatePinnedToCore(receiveData, "receive dat from the bluetooth", BLUETOOTH_STACK_RCV_DATA, nullptr, tskIDLE_PRIORITY , &xHandle_bluetoothReceiveData, tskNO_AFFINITY);
+  
+
+
+  //mp3.init(1, true);
+  motor.init();
+  motor.setDirection(MOTOR_DIR_FORWARD, MOTOR_DIR_FORWARD);
+  motor.setSpeed(MOTOR_SPEED_6, MOTOR_SPEED_6);
+  delay(1000);
+  motor.rotate(MOTOR_ANGLE_180);
+  //delay(1000);
+  //motor.setSpeed(MOTOR_SPEED_BREAK, MOTOR_SPEED_BREAK);
 
 } 
 
 void loop() {
 
-  mp3.init(1, true);
-  delay(5000);
-  mp3.playIntermediateSound(1);
+
 } 
