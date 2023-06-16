@@ -177,7 +177,9 @@ you can find the list of components with prices in the directory called [prices 
 
 - we used android app only in the line tracker as the mobile application sends "H" via bluetooth to the car to tell it that it's running on a straight so move faster or send "L" via bluetooth to the car to tell it that it's not running on a straight so move slower 
 
-![app](./temp%20files%20for%20images%20and%20videos/app.gif)
+<p align="center">
+    <img width="200" src="./temp%20files%20for%20images%20and%20videos/app.gif" alt="Material Bread logo">
+</p>
 
 </details>
 
