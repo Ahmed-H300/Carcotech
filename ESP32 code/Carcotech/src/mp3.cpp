@@ -1,6 +1,6 @@
 #include "mp3.h"
 
-void MP3::init(int songName, bool enablePlayback)
+void MP3::init()
 {
     /*initialize the serial*/
     Serial2.begin(9600);
@@ -10,9 +10,6 @@ void MP3::init(int songName, bool enablePlayback)
 
     /*set default volume to 30*/
     myDFPlayer.volume(30);
-
-    /*play the song*/
-    changeSong(songName, enablePlayback);
 }
 
 
@@ -33,4 +30,9 @@ void MP3::playIntermediateSound(int trackName)
 {
     /*play the track*/
     myDFPlayer.advertise(trackName);
+}
+
+void MP3::stopMusic()
+{
+    myDFPlayer.stop();
 }

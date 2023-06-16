@@ -1,28 +1,5 @@
 #include "motor.h"
 
-/*this is the ISR for interrupt signal received by the left motor feedback*/
-void IRAM_ATTR isrL()
-{
-    /*for every 50 pulses, there is 1 rotation*/
-    counterLeft++;
-    if(counterLeft == 50)
-    {
-        counterLeft = 0;
-        numOfRotationsLeft++;
-    }
-}
-
-/*this is the ISR for interrupt signal received by the right motor feedback*/
-void IRAM_ATTR isrR()
-{
-    /*for every 50 pulses, there is 1 rotation*/
-    counterRight++;
-    if(counterRight == 50)
-    {
-        counterRight = 0;
-        numOfRotationsRight++;
-    }
-}
 
 void Motor::init()
 {
@@ -35,47 +12,64 @@ void Motor::init()
     digitalWrite(MOTOR_R_IN1_PIN, LOW);
     digitalWrite(MOTOR_L_IN1_PIN, LOW);
     
-    
+    /*initalize speed channels*/
+    ledcSetup(MOTOR_L_SPEED_CHANNEL, 4000, 8); 
+    ledcSetup(MOTOR_R_SPEED_CHANNEL, 4000, 8);
+
     /*assign speed control PWM channels to speed control pins*/
     ledcAttachPin(MOTOR_L_IN2_PIN, MOTOR_L_SPEED_CHANNEL);
     ledcAttachPin(MOTOR_R_IN2_PIN, MOTOR_R_SPEED_CHANNEL);
 
-    /*initalize speed channels*/
-    ledcSetup(MOTOR_L_SPEED_CHANNEL, 4000, 8);
-    ledcSetup(MOTOR_R_SPEED_CHANNEL, 4000, 8);
-    
-    /*configure interrupt pins to be input*/
-    pinMode(MOTOR_L_SENS1_PIN, INPUT_PULLUP);
-    pinMode(MOTOR_R_SENS1_PIN, INPUT_PULLUP);
-
     /*intialize the pins*/
-    ledcWrite(MOTOR_L_IN2_PIN, 0);
-    ledcWrite(MOTOR_R_IN2_PIN, 0);
+    ledcWrite(MOTOR_L_SPEED_CHANNEL, 0);
+    ledcWrite(MOTOR_R_SPEED_CHANNEL, 0);
 
 }
 
 void Motor::setSpeed(uint8_t LSpeed, uint8_t RSpeed)
 {   
+    
+    /*store the values of the speed*/
+    leftWheelSpeed = LSpeed;
+    rightWheelSpeed = RSpeed;
 
     /*check for the direction of left wheel to calculate the speed*/
-    /*if(leftWheelDirection == MOTOR_DIR_FORWARD)
+    if(leftWheelDirection == MOTOR_DIR_FORWARD)
     {
         LSpeed = 255 - LSpeed;
-    }*/   
+    }   
     
     /*check for the direction of right wheel to calculate the speed*/
-    /*if(rightWheelDirection == MOTOR_DIR_FORWARD)
+    if(rightWheelDirection == MOTOR_DIR_FORWARD)
     {
         RSpeed = 255 - RSpeed;
-    }*/
+    }
 
-    /*assign the speed to the left wheel*/
-    ledcWrite(MOTOR_L_SPEED_CHANNEL, LSpeed);
-    leftWheelSpeed = LSpeed;
+    /*stop the left wheel*/
+    if(LSpeed == MOTOR_SPEED_BREAK)
+    {
+      /*stop the wheel*/
+      stopLeftWheel();
+    }
+    else
+    {
+      /*assign the speed to the left wheel*/
+      ledcWrite(MOTOR_L_SPEED_CHANNEL, LSpeed);
+    }
 
-    /*assign the speed to the right wheel*/
-    ledcWrite(MOTOR_R_SPEED_CHANNEL, RSpeed);
-    rightWheelSpeed = RSpeed;
+    /*stop the right wheel*/
+    if(RSpeed == MOTOR_SPEED_BREAK)
+    {
+      /*stop the wheel*/
+      stopRightWheel();
+    }
+    else
+    {
+      /*assign the speed to the right wheel*/
+      ledcWrite(MOTOR_R_SPEED_CHANNEL, RSpeed);
+    }
+
+
 }
 
 void Motor::setDirection(uint8_t LDirection, uint8_t RDirection)
@@ -108,7 +102,7 @@ void Motor::setDirection(uint8_t LDirection, uint8_t RDirection)
         /*make right wheel move forward*/
         digitalWrite(MOTOR_R_IN1_PIN, HIGH);
     }
-    else if(LDirection == MOTOR_DIR_BACKWARD)
+    else if(RDirection == MOTOR_DIR_BACKWARD)
     {
         /*make right wheel move backward*/
         digitalWrite(MOTOR_R_IN1_PIN, LOW);
@@ -121,101 +115,35 @@ void Motor::setDirection(uint8_t LDirection, uint8_t RDirection)
 }   
 
 
-void Motor::rotate(uint8_t angleValue)
-{
-
-    /*stop the car*/
-    stop();
-
-    /*wait for 1 second*/
-    delay(1000);        // TODO: edit it
-    
-    /*a variable the holds number of average rotations*/
-    float numOfNeededRotations = 0;
-
-    if(angleValue == MOTOR_ANGLE_180)
-    {
-        /*assign a value to the vriable*/
-        numOfNeededRotations = MOTOR_NUM_OF_ROT_180;
-
-        /*change the direction of the motors*/
-        setDirection(MOTOR_DIR_BACKWARD, MOTOR_DIR_FORWARD);
-    }
-    else if(angleValue == MOTOR_ANGLE_90)
-    {
-        /*assign a value to the vriable*/
-        numOfNeededRotations = MOTOR_NUM_OF_ROT_90;
-        
-        /*change the direction of the motors*/
-        setDirection(MOTOR_DIR_BACKWARD, MOTOR_DIR_FORWARD);
-    }
-    else if(angleValue == MOTOR_ANGLE_NEG_90)
-    {
-        /*assign a value to the vriable*/
-        numOfNeededRotations = MOTOR_NUM_OF_ROT_90;
-        
-        /*change the direction of the motors*/
-        setDirection(MOTOR_DIR_FORWARD, MOTOR_DIR_BACKWARD);
-    }
-    else
-    {
-        // do nothing
-    }
-
-    /*set old speeds again*/
-    setSpeed(leftWheelSpeed, rightWheelSpeed);
-    
-    /*start counting the number of rotations*/
-    beginCounting();
-
-    /*wait till the amount of rotation is required*/
-    while(numOfNeededRotations > getAvgNumOfRotations());
-
-    /*disable the external interrupts*/
-    turnOffInterrups();
-
-    /*stop the motor*/
-    stop();
-
-    /*change the directions to the default (forward)*/
-    //setDirection(MOTOR_DIR_FORWARD, MOTOR_DIR_FORWARD);
-
-    /*go back to original speed*/
-    //setSpeed(leftWheelSpeed, rightWheelSpeed);
-}
-
-void Motor::beginCounting()
-{
-    /*zero out all the counters*/
-    numOfRotationsLeft = 0;
-    numOfRotationsRight = 0;
-    counterLeft = 0;
-    counterRight = 0;
-
-    /*attach the interrup code*/
-    attachInterrupt(MOTOR_L_SENS1_PIN, isrL, RISING);
-    attachInterrupt(MOTOR_R_SENS1_PIN, isrR, RISING);
-}
-
-float_t Motor::getAvgNumOfRotations()
-{   
-    /*return the average of numOfRotationsLeft and numOfRotationsRight*/
-    return (numOfRotationsLeft+numOfRotationsRight)/2.0 + ((counterLeft/50) + (counterRight/50))/2.0;
-}
-
-void Motor::turnOffInterrups()
-{
-    /*remove interrupts*/   
-    detachInterrupt(MOTOR_L_SENS1_PIN);
-    detachInterrupt(MOTOR_R_SENS1_PIN);
-}
-
-
 void Motor::stop()
 {
     /*the motor is stopped by writing 1 to all pins accordding to the datasheet*/
     digitalWrite(MOTOR_L_IN1_PIN, HIGH);
-    ledcWrite(MOTOR_L_SPEED_CHANNEL, 255);
+    ledcWrite(MOTOR_L_SPEED_CHANNEL, 256);
     digitalWrite(MOTOR_R_IN1_PIN, HIGH);
-    ledcWrite(MOTOR_R_SPEED_CHANNEL, 255);
+    ledcWrite(MOTOR_R_SPEED_CHANNEL, 256);
+}
+
+void Motor::increaseMotorSpeed(uint8_t leftWheelIncreaseAmount, uint8_t rightWheelIncreaseAmount)
+{
+    setSpeed(leftWheelSpeed + leftWheelIncreaseAmount, rightWheelSpeed + rightWheelIncreaseAmount);
+}
+
+void Motor::decreaseMotorSpeed(uint8_t leftWheelDecreaseAmount, uint8_t rightWheelDecreaseAmount)
+{
+    setSpeed(leftWheelSpeed - leftWheelDecreaseAmount, rightWheelSpeed - rightWheelDecreaseAmount);
+}
+
+void Motor::stopLeftWheel()
+{
+    /*the motor is stopped by writing 1 to all pins accordding to the datasheet*/
+    digitalWrite(MOTOR_L_IN1_PIN, HIGH);
+    ledcWrite(MOTOR_L_SPEED_CHANNEL, 256);
+}
+
+void Motor::stopRightWheel()
+{
+    /*the motor is stopped by writing 1 to all pins accordding to the datasheet*/
+    digitalWrite(MOTOR_R_IN1_PIN, HIGH);
+    ledcWrite(MOTOR_R_SPEED_CHANNEL, 256);
 }

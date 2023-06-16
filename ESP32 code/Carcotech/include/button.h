@@ -1,7 +1,11 @@
 #ifndef BUTTON_H_
 #define BUTTON_H_
 
-#include "constants.h"
+
+// related to the buttons
+#define LINE_TRACKER_PIN    23
+#define MAZE_TRAIN_PIN      4
+#define MAZE_SOLVER_PIN     19
 
 class Button
 {

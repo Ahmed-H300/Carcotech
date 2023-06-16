@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "random": "cpp",
+        "memory": "cpp",
+        "array": "cpp",
+        "string": "cpp"
+    }
+}

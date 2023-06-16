@@ -1,16 +1,25 @@
 #include "sensor.h"
-#include "constants.h"
 
 #include <Wire.h>
 
 
 void Sensor::init()
 {
-    /*initialize I2C communication where SDA is connected to GPIO21, SCL is connected to GPIO22*/
-    Wire.begin();
+    
+    // Wire.begin(21,22, 400000);
+    bool isWireInitializedSuccessfully = false;
+    uint8_t isSX1509InitializedSuccessfully = 0;
+    do
+    {
+        /*initialize I2C communication where SDA is connected to GPIO21, SCL is connected to GPIO22*/
+        isWireInitializedSuccessfully = Wire.begin();
 
-    /*begin the port expander*/
-    io.begin(SX1509_ADDRESS);
+        /*begin the port expander*/
+        isSX1509InitializedSuccessfully = io.begin(SX1509_ADDRESS);
+
+    } while (!isWireInitializedSuccessfully && isSX1509InitializedSuccessfully == 0);
+    
+
 
     /*make all the pins input*/
     io.writeWord(REG_DIR_B, ~0);
@@ -36,11 +45,11 @@ void Sensor::readAndProcessReadings()
     data[1][4] = (rawData >> 5) & 1;
     
     /*map the values of front row to the matrix*/
-    data[2][0] = (rawData >> 10) & 1;
-    data[2][1] = (rawData >> 11) & 1;
+    data[2][0] = (rawData >> 14) & 1;
+    data[2][1] = (rawData >> 13) & 1;
     data[2][2] = (rawData >> 12) & 1;
-    data[2][3] = (rawData >> 13) & 1;
-    data[2][4] = (rawData >> 14) & 1;
+    data[2][3] = (rawData >> 11) & 1;
+    data[2][4] = (rawData >> 10) & 1;
     
 }
 
@@ -60,5 +69,126 @@ uint8_t (*Sensor::readSensor())[5]
     readAndProcessReadings();
 
     /*return the whole matrix*/
+    return data;
+}
+
+
+void Sensor::copySensorValToAnotherVal(uint8_t (*src)[5],  uint8_t (*dst)[5])
+{
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        for(uint8_t j = 0; j < 5; j++)
+        {
+            dst[i][j] = src[i][j];
+        }
+    }
+}
+
+bool Sensor::isDataEqual(uint8_t (*src)[5],  uint8_t (*dst)[5])
+{
+    bool isEqual = true;
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        for(uint8_t j = 0; j < 5; j++)
+        {
+            if(dst[i][j] != src[i][j])
+                    isEqual = false;
+        }
+    }   
+    return isEqual;
+}
+
+uint8_t (*Sensor::readStableSensor(uint8_t minNumOfReadings))[5]
+{
+    /*local variable to hold the old reading*/
+    uint8_t oldVal[3][5];
+
+    /*local variable to indicate whether the reading is stable or not*/
+    bool isStable = true;
+
+    /*get initial reading*/
+    readAndProcessReadings();
+
+    /*read till getting a stable value*/
+    do{
+
+        for(uint8_t i = 0; i < minNumOfReadings; i++)
+        {
+            /*copy the value into local variable*/
+            copySensorValToAnotherVal(data, oldVal);
+
+            /*get a reading*/
+            readAndProcessReadings();
+
+            /*determine whether old val equal to new value*/
+            if(isDataEqual(data, oldVal) == false){
+                isStable = false;
+                break;
+            }
+        }
+
+    }while(!isStable);
+
+    /*return the whole matrix*/
+    return data;
+}
+
+void Sensor::addToMatrix(uint8_t (*src)[5],  uint8_t (*dst)[5])
+{
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        for(uint8_t j = 0; j < 5; j++)
+        {
+            dst[i][j] += src[i][j];
+        }
+    }
+}
+
+void Sensor::noramlizeMatrixAndAverage(uint8_t (*data)[5], float_t threshold)
+{
+    for(uint8_t i = 0; i < 3; i++)
+    {
+        for(uint8_t j = 0; j < 5; j++)
+        {
+            if(data[i][j] >= threshold)
+                data[i][j] = 1;
+            else if(data[i][j] < threshold)
+                data[i][j] = 0;
+            else
+                data[i][j] = 0;
+        }
+    }   
+}
+
+uint8_t (*Sensor::readAverageSensor(uint8_t minNumOfReadings))[5]
+{
+    /*local variable to hold the values*/
+    uint8_t oldVal[3][5];
+
+    /*read values from sensor*/
+    readAndProcessReadings();
+    
+    /*get initial value for oldVal*/
+    copySensorValToAnotherVal(data, oldVal);
+
+    /*loop for minNumOfReadings and get the readings*/
+    for(uint8_t i = 0; i < minNumOfReadings; i++)
+    {   
+        /*get some readings*/
+        readAndProcessReadings();
+
+        /*add the readings to the matrix*/
+        addToMatrix(data, oldVal);
+    }
+
+
+    /*normalize the matrix*/
+    noramlizeMatrixAndAverage(oldVal, (minNumOfReadings+1)/2.0);
+
+
+    /*copy the matrix*/
+    copySensorValToAnotherVal(oldVal, data);
+
+    /*return the matrix*/
     return data;
 }

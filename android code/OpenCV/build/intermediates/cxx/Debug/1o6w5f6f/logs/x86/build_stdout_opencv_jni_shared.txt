@@ -1,0 +1,2 @@
+ninja: Entering directory `D:\codes\PROJECTS\third year\second term\embedded systems\Carcotech\android code\OpenCV\.cxx\Debug\1o6w5f6f\x86'
+ninja: no work to do.

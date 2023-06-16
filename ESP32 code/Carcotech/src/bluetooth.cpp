@@ -28,8 +28,7 @@ String Bluetooth::getData(int dataLen, uint32_t timeOutMS)
             
             data += (char)SerialBT.read();
             receivedCounter++;
-            taskYIELD();
-            //vTaskDelay(pdMS_TO_TICKS(1));
+            //taskYIELD();
         }
         
     }
@@ -45,8 +44,7 @@ String Bluetooth::getData(int dataLen, uint32_t timeOutMS)
             
             data += (char)SerialBT.read();
             receivedCounter++;
-            taskYIELD();
-            //vTaskDelay(pdMS_TO_TICKS(1));
+            //taskYIELD();
         }
 
     }
@@ -61,12 +59,16 @@ void Bluetooth::sendData(String data)
 
 void Bluetooth::init()
 {
-    
     // initialization of the bluetooth
     SerialBT.begin(device_name);
 
     // telling the bluetooth to use that pin for connection
     SerialBT.setPin(pin);
+}
+
+void Bluetooth::waitTillConnection()
+{
+    while(!SerialBT.hasClient());
 }
 
 

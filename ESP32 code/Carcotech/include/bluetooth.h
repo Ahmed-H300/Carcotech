@@ -1,7 +1,7 @@
 #ifndef BLUETOOTH_H_
 #define BLUETOOTH_H_
 
-/*library link: https://github.com/espressif/arduino-esp32/tree/master/libraries/BluetoothSerial*/
+/*library link: https://github.com/espressif/arduino-esp32/tree/master/libraries/BluetoothSerial */
 #include "BluetoothSerial.h"
 
 class Bluetooth
@@ -44,6 +44,12 @@ public:
      * constructor results in watchdog timer to reset the esp32 over and over and over
     */
     void init();
+
+
+    /**
+     * @brief this function makes esp32 wait till someone connects to bluetooth
+    */
+    void waitTillConnection();
 
 };
 
